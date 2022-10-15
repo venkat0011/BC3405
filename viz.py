@@ -52,10 +52,12 @@ def agent_portrayal(agent):
                      "r": 1}
 
         # create a new instance for cabin agent, create a new class in plane then need to modify the algo abit
-        if agent.state=="FREE":
+        if agent.capacity>0:
             portrayal['Color'] = 'green'
-        if agent.state=="Takem":
+        else:
             portrayal["Color"] = "red"
+        portrayal['text'] = agent.capacity
+        portrayal['text_color'] = 'white'
     return portrayal
 
 class TextElement(VisualizationElement):

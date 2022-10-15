@@ -26,7 +26,7 @@ def front_to_back_gr(model):
     counter = last_row-1
     while(counter - 4 >=2):
         for x in range(counter, counter-4, -1):
-            for y in (0, 1, 2, 4, 5, 6):
+            for y in ( 1, 2, 3, 5, 6,7):
                 if (x not in evac_seats):
                     agent = plane.PassengerAgent(id, model, (x, y), 4)
                     id += 1
@@ -48,7 +48,7 @@ def back_to_front_gr(model):
     counter = first_row - 1
     while(counter+4<=last_row-1):
         for x in range(counter+4, counter, -1):
-            for y in (0, 1, 2, 4, 5, 6):
+            for y in ( 1, 2, 3, 5, 6,7):
                 if (x not in evac_seats):
                     agent = plane.PassengerAgent(id, model, (x, y), 4)
                     id += 1
@@ -71,7 +71,7 @@ def front_to_back(model):
     id = 1
     for x in range(last_row-1,first_row-1,-1):
         sub_group = []
-        for y in (0, 1, 2, 4, 5, 6):
+        for y in ( 1, 2, 3, 5, 6,7):
             if (x not in evac_seats):
                 agent = plane.PassengerAgent(id, model, (x, y), group_id)
                 id += 1
@@ -90,7 +90,7 @@ def back_to_front(model):
     id = 1
     for x in range(first_row, last_row):
         sub_group = []
-        for y in (0, 1, 2, 4, 5, 6):
+        for y in ( 1, 2, 3, 5, 6,7):
             if (x not in evac_seats):
                 agent = plane.PassengerAgent(id, model, (x, y), group_id)
                 id += 1
@@ -107,7 +107,7 @@ def win_mid_ais(model):
     final_group = []
     id = 1
     sub_group = []
-    for y in (2, 4):
+    for y in (3, 5):
         for x in range(first_row,last_row):
             if (x not in evac_seats):
                 agent = plane.PassengerAgent(id, model, (x, y), 3)
@@ -117,7 +117,7 @@ def win_mid_ais(model):
     final_group.extend(sub_group)
 
     sub_group = []
-    for y in (1, 5):
+    for y in (2, 6):
         for x in range(first_row, last_row):
             if (x not in evac_seats):
                 agent = plane.PassengerAgent(id, model, (x, y), 2)
@@ -127,7 +127,7 @@ def win_mid_ais(model):
     final_group.extend(sub_group)
 
     sub_group = []
-    for y in (0, 6):
+    for y in (1, 7):
         for x in range(first_row,last_row):
             if (x not in evac_seats):
                 agent = plane.PassengerAgent(id, model, (x, y), 1)
@@ -138,86 +138,86 @@ def win_mid_ais(model):
 
     model.boarding_queue.extend(final_group)
 
-
-def steffen_perfect(model):
-
-    final_group = []
-    id = 1
-    for y in (2, 4):
-        for x in range(first_row, last_row, 2):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 6)
-                id += 1
-                final_group.append(agent)
-    for y in (2, 4):
-        for x in range(first_row+1, last_row, 2):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 5)
-                id += 1
-                final_group.append(agent)
-    for y in (1, 5):
-        for x in range(first_row, last_row, 2):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 4)
-                id += 1
-                final_group.append(agent)
-    for y in (1, 5):
-        for x in range(first_row+1, last_row, 2):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 3)
-                id += 1
-                final_group.append(agent)
-    for y in (0, 6):
-        for x in range(first_row, last_row, 2):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 2)
-                id += 1
-                final_group.append(agent)
-    for y in (0, 6):
-        for x in range(first_row+1, last_row, 2):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 1)
-                id += 1
-                final_group.append(agent)
-
-    model.boarding_queue.extend(final_group)
-
-
-def steffen_modified(model):
-    group = []
-    id = 1
-    for x in range(first_row, last_row, 2):
-        for y in (2, 1, 0):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 4)
-                id += 1
-                group.append(agent)
-    model.random.shuffle(group)
-    model.boarding_queue.extend(group)
-    group = []
-    for x in range(first_row, last_row, 2):
-        for y in (4, 5, 6):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 3)
-                id += 1
-                group.append(agent)
-    model.random.shuffle(group)
-    model.boarding_queue.extend(group)
-    group = []
-    for x in range(first_row+1, last_row, 2):
-        for y in (2, 1, 0):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 2)
-                id += 1
-                group.append(agent)
-    model.random.shuffle(group)
-    model.boarding_queue.extend(group)
-    group = []
-    for x in range(first_row, last_row, 2):
-        for y in (4, 5, 6):
-            if (x not in evac_seats):
-                agent = plane.PassengerAgent(id, model, (x, y), 1)
-                id += 1
-                group.append(agent)
-    model.random.shuffle(group)
-    model.boarding_queue.extend(group)
+#
+# def steffen_perfect(model):
+#
+#     final_group = []
+#     id = 1
+#     for y in (2, 4):
+#         for x in range(first_row, last_row, 2):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 6)
+#                 id += 1
+#                 final_group.append(agent)
+#     for y in (2, 4):
+#         for x in range(first_row+1, last_row, 2):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 5)
+#                 id += 1
+#                 final_group.append(agent)
+#     for y in (1, 5):
+#         for x in range(first_row, last_row, 2):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 4)
+#                 id += 1
+#                 final_group.append(agent)
+#     for y in (1, 5):
+#         for x in range(first_row+1, last_row, 2):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 3)
+#                 id += 1
+#                 final_group.append(agent)
+#     for y in (0, 6):
+#         for x in range(first_row, last_row, 2):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 2)
+#                 id += 1
+#                 final_group.append(agent)
+#     for y in (0, 6):
+#         for x in range(first_row+1, last_row, 2):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 1)
+#                 id += 1
+#                 final_group.append(agent)
+#
+#     model.boarding_queue.extend(final_group)
+#
+#
+# def steffen_modified(model):
+#     group = []
+#     id = 1
+#     for x in range(first_row, last_row, 2):
+#         for y in (2, 1, 0):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 4)
+#                 id += 1
+#                 group.append(agent)
+#     model.random.shuffle(group)
+#     model.boarding_queue.extend(group)
+#     group = []
+#     for x in range(first_row, last_row, 2):
+#         for y in (4, 5, 6):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 3)
+#                 id += 1
+#                 group.append(agent)
+#     model.random.shuffle(group)
+#     model.boarding_queue.extend(group)
+#     group = []
+#     for x in range(first_row+1, last_row, 2):
+#         for y in (2, 1, 0):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 2)
+#                 id += 1
+#                 group.append(agent)
+#     model.random.shuffle(group)
+#     model.boarding_queue.extend(group)
+#     group = []
+#     for x in range(first_row, last_row, 2):
+#         for y in (4, 5, 6):
+#             if (x not in evac_seats):
+#                 agent = plane.PassengerAgent(id, model, (x, y), 1)
+#                 id += 1
+#                 group.append(agent)
+#     model.random.shuffle(group)
+#     model.boarding_queue.extend(group)

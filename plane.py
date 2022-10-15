@@ -7,9 +7,9 @@ import numpy as np
 
 def baggage_normal():
     """ Generates a positive integer number from normal distribution """
-    value = round(np.random.normal(7, 2), 0)
+    value = round(np.random.normal(1, 1), 0)
     while value < 0:
-        value = round(np.random.normal(7, 2), 0)
+        value = round(np.random.normal(1, 1), 0)
     return value
 
 
@@ -71,10 +71,31 @@ class PassengerAgent(Agent):
                 if self.model.get_patch((self.pos[0], self.pos[1])).back == 0:
                     self.model.get_patch((self.pos[0], self.pos[1])).ongoing_shuffle = False
 
-        elif self.state == 'BAGGAGE':
-            if self.baggage > 1:
-                self.baggage -= 1
+        elif self.state == 'BAGGAGE': # we need to update the capacity of the bin in the relevant col
+            if self.baggage >= 1:
+                # get the cabin allocated to this person first
+                # we need to get the cabin based on his current position, the first instance of baggage is when he is at the column of his seat
+                cabin = self.model.get_cabin(self.pos) # this will always return the avaialbale bin
+                #the bin might not always be in the current location, so we need to check if it is in the same column
+                if(cabin.col == self.pos[0]):
+
+                    self.baggage-=1
+                    cabin.capacity-=1
+                else: # first we need to move to the cabin first then deposit
+                    print("it is going to move")
+                    self.move(cabin.col-self.pos[0],0)
+
+                    pass
+
+
+                # check what is the position, which row does it belong to, 1,2,3 will belong to the cabin at the top
+                # while 5,6,7 will belong to the btm cabin
+
             else:
+                # need to move back to the seat position
+                # need to check where is the seating postion and the current position
+                if(self.seat_pos[0]!=self.pos[0]):
+                    self.move(self.seat_pos[0] - self.pos[0],0)
                 self.state = 'SEATING'
 
         elif self.state == 'SEATING':
@@ -122,7 +143,6 @@ class PassengerAgent(Agent):
         self.model.get_patch((self.pos[0], self.pos[1])).state = 'FREE'
         self.model.grid.move_agent(self, (self.pos[0] + m_x, self.pos[1] + m_y))
         self.model.get_patch((self.pos[0], self.pos[1])).state = 'TAKEN'
-
     def store_luggage(self):
         # storing luggage and stopping queue
         pass
@@ -144,10 +164,11 @@ class PatchAgent(Agent):
     def step(self):
         pass
 class CabinAgent(Agent):
-    def __init__(self,unique_id,model,patch_type,state):
+    def __init__(self,unique_id,model,patch_type,col):
         super().__init__(unique_id, model) # path type wl
+        self.capacity = 4
+        self.col = col
         self.type = patch_type
-        self.state = state
         self.shuffle = 0
         self.back = 0
         self.allow_shuffle = False
@@ -158,7 +179,7 @@ class CabinAgent(Agent):
 
 
 class PlaneModel(Model):
-    """ A model representing simple plane consisting of 16 rows of 6 seats (2 x 3) using a given boarding method """
+    """ Replica of the Airbus A320 Layouut and the boarding simulation of such a plane """
 
     method_types = {
         'Random': methods.random,
@@ -166,9 +187,7 @@ class PlaneModel(Model):
         'Front-to-back (4 groups)': methods.front_to_back_gr,
         'Back-to-front': methods.back_to_front,
         'Back-to-front (4 groups)': methods.back_to_front_gr,
-        'Window-Middle-Aisle': methods.win_mid_ais,
-        'Steffen Perfect': methods.steffen_perfect,
-        'Steffen Modified': methods.steffen_modified
+        'Window-Middle-Aisle': methods.win_mid_ais
     }
 
     def __init__(self, method, shuffle_enable=True, common_bags='normal'):
@@ -205,8 +224,9 @@ class PlaneModel(Model):
         for col in range(38):
             patch = PatchAgent(id, self, 'CORRIDOR', 'FREE')
             if (col >=2 and col <= 35):
-                cabin = CabinAgent(id,self,"CABIN","FREE")
+                cabin = CabinAgent("btm"+str(col),self,"CABIN",col)
                 self.grid.place_agent(cabin,(col,0))
+                cabin = CabinAgent("top" + str(col), self, "CABIN",col)
                 self.grid.place_agent(cabin,(col,8))
             self.grid.place_agent(patch, (col, 4))
             id += 1
@@ -240,3 +260,55 @@ class PlaneModel(Model):
             if isinstance(agent, PassengerAgent):
                 return agent
         return None
+    def get_cabin(self,pos):  # what should be the cabin at his location, return the one with
+        # check the top and btm cabin at his location
+        agent1 = self.grid.get_cell_list_contents((pos[0],0)) # the btm cabin
+        agent2 = self.grid.get_cell_list_contents((pos[0], 8)) # the top cabin
+        for agent in agent1:
+            if ( isinstance(agent,CabinAgent) and agent.capacity >0):
+                return agent
+        for agent in agent2:
+            if(isinstance(agent,CabinAgent) and agent.capacity>0 ):
+                return agent
+        # if after these 2 loops and it still cannot find, then we need to use the entire search space
+        cabin = self.get_next_avail_cabin(pos)
+        if(isinstance(cabin,CabinAgent) and cabin.capacity >0):
+            return cabin
+        return None
+
+
+    def get_next_avail_cabin(self,pos): # this will require the current position
+        #  this function is called when the cabin allocated to the passenger column is occupied and
+        if (pos[0] >= 20):  # the search space to the right is lesser
+            for i in range(pos[0] + 1, 36):
+                top_cabin = self.get_cabin((i, 0))
+                btm_cabin = self.get_cabin((i, 8))
+                if (top_cabin.capacity > 0):
+                    return top_cabin
+                elif (btm_cabin.capacity > 0):
+                    return btm_cabin
+            # even after this it doesnt return means all the cabins to the right are occupied sp have to search the left side
+            for i in range(2, pos[0]):
+                top_cabin = self.get_cabin((i, 0))
+                btm_cabin = self.get_cabin((i, 8))
+                if (top_cabin.capacity > 0):
+                    return top_cabin
+                elif (btm_cabin.capacity > 0):
+                    return btm_cabin
+
+        else:  # the search space to the left is smaller
+            for i in range(2, pos[0]):
+                top_cabin = self.get_cabin((i, 0))
+                btm_cabin = self.get_cabin((i, 8))
+                if (top_cabin.capacity > 0):
+                    return top_cabin
+                elif (btm_cabin.capacity > 0):
+                    return btm_cabin
+            for i in range(pos[0] + 1, 36):
+                top_cabin = self.get_cabin((i, 0))
+                btm_cabin = self.get_cabin((i, 8))
+                if (top_cabin.capacity > 0):
+                    return top_cabin
+                elif (btm_cabin.capacity > 0):
+                    return btm_cabin
+
