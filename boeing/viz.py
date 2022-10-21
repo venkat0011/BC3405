@@ -19,7 +19,7 @@ def agent_portrayal(agent):
                      "Color": "grey",
                      "r": 0.9}
 
-        portrayal['Color'] = colors[agent.group - 1]
+        # portrayal['Color'] = colors[agent.group - 1]
 
         if agent.state == "FINISHED":
             portrayal["Layer"] = 2
@@ -80,5 +80,5 @@ server = ModularServer(PlaneModel,
                        [grid],
                        "Boarding Simulation",
                        {"method": method_choice, "shuffle_enable": shuffle_choice, 'common_bags': bags_choice})
-server.port = 8521 # The default
+server.port = 9000 # The default
 server.launch()

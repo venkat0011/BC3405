@@ -46,7 +46,7 @@ class PassengerAgent(Agent):
                         self.state = 'SEATING'
 
         elif self.state == 'SHUFFLE':
-            if self.pos[1] == 4 and self.model.get_patch((self.pos[0] + 1, self.pos[1])).state == 'FREE':
+            if (self.pos[1] == 4  or self.pos[1]==10) and self.model.get_patch((self.pos[0] + 1, self.pos[1])).state == 'FREE':
                 if self.pos[0] == self.seat_pos[0]:
                     self.shuffle_dist = self.model.get_patch((self.pos[0], self.pos[1])).shuffle
                     self.model.get_patch((self.pos[0], self.pos[1])).shuffle -= 1
@@ -58,12 +58,12 @@ class PassengerAgent(Agent):
                         self.model.schedule.safe_remove_priority(self)
                         self.model.schedule.add_priority(self)
             else:
-                print(self.pos[1],self.unique_id)
-                if(self.pos[1]==2 or self.pos[1]==6):
+                print("SHUFFLE SATAHGE",self.pos[1],self.unique_id)
+                if(self.pos[1]==2 or self.pos[1]==6 or self.pos[1]==12):
                     sub = 2
                 else:
                     sub = 1
-                if self.pos[1] > 4 and self.model.get_patch((self.pos[0], self.pos[1] - sub)).state == 'FREE':
+                if self.pos[1] > 4  and self.model.get_patch((self.pos[0], self.pos[1] - sub)).state == 'FREE':
                     self.move(0, -sub)
                 elif self.pos[1] < 4 and self.model.get_patch((self.pos[0], self.pos[1] + sub)).state == 'FREE':
                     self.move(0, sub)
@@ -118,7 +118,8 @@ class PassengerAgent(Agent):
                 else:
                     self.move(0,-1)
             else:
-                if (self.pos[1] == 4):
+                print(self.seat_pos)
+                if (self.pos[1] == 4 or self.pos[1]==10):
                     self.move(0, 2)
                     print("the seat position is", self.seat_pos)
                 else:
@@ -145,11 +146,21 @@ class PassengerAgent(Agent):
                             if local_agent.state != 'FINISHED':
                                 raise Exception()
                             shuffle_agents.append(local_agent)
+                elif self.seat_pos[1] in (13, 14):
+                    for y in range(12, self.seat_pos[1]):
+                        local_agent = self.model.get_passenger((self.seat_pos[0], y))
+                        if local_agent is not None:
+                            if local_agent.state != 'FINISHED':
+                                raise Exception()
+                            shuffle_agents.append(local_agent)
                 shuffle_count = len(shuffle_agents)
                 if shuffle_count != 0:
                     self.model.get_patch((self.seat_pos[0], 4)).shuffle = shuffle_count
                     self.model.get_patch((self.seat_pos[0], 4)).back = shuffle_count
                     self.model.get_patch((self.seat_pos[0], 4)).allow_shuffle = True
+                    self.model.get_patch((self.seat_pos[0], 10)).shuffle = shuffle_count
+                    self.model.get_patch((self.seat_pos[0], 10)).back = shuffle_count
+                    self.model.get_patch((self.seat_pos[0], 10)).allow_shuffle = True
                     self.model.get_patch((self.pos[0] + 1, self.pos[1])).ongoing_shuffle = True
                     for local_agent in shuffle_agents:
                         local_agent.state = 'SHUFFLE'
@@ -257,6 +268,7 @@ class PlaneModel(Model):
             self.grid.place_agent(patch2, (col, 10))
             id += 1
 
+
     def step(self): # this is the place where the agent first enters the plane
         self.schedule.step()
 
@@ -265,22 +277,22 @@ class PlaneModel(Model):
         if len(self.grid.get_cell_list_contents((0, 10))) == 1:
             self.get_patch((0, 10)).state = 'FREE'
 
-        if len(self.boarding_queue) > 0:
+        if (self.get_patch((0, 4)).state == 'FREE' or self.get_patch((0, 10)).state == 'FREE') and len(self.boarding_queue) > 0 :
             a = self.boarding_queue.pop()
-            a.state = 'GOING'
-            if(a.seat_pos[1]>10 and self.get_patch((0, 10)).state == 'FREE'):
-                tuple = (0,10)
-            elif(a.seat_pos[1]<4 and self.get_patch((0, 4)).state == 'FREE'):
-                tuple = (0,4)
+            tuple = (0, 0)
+            if (a.seat_pos[1] > 10 and self.get_patch((0, 10)).state == 'FREE'):
+                tuple = (0, 10)
+            elif (a.seat_pos[1] < 10 and self.get_patch((0, 4)).state == 'FREE'):
+                tuple = (0, 4)
+            if (tuple != (0, 0)):
+                a.state = 'GOING'
+                self.schedule.add(a)
+                self.grid.place_agent(a, tuple)
+                self.get_patch(tuple).state = 'TAKEN'
             else:
-                if(self.get_patch((0, 4)).state == 'FREE'):
-                    tuple = (0,4)
-                else:
-                    tuple = (0,10)
-            self.schedule.add(a)
-            self.grid.place_agent(a, tuple)
-            self.get_patch(tuple).state = 'TAKEN'
-
+                print("no free cooridor pusing back the agent into list")
+                # we need to make the qeueue moveee
+                self.boarding_queue.append(a)
         if self.schedule.get_agent_count() == 0:
             self.running = False
 
@@ -299,8 +311,15 @@ class PlaneModel(Model):
         return None
     def get_cabin(self,pos):  # what should be the cabin at his location, return the one with
         # check the top and btm cabin at his location
-        agent1 = self.grid.get_cell_list_contents((pos[0],3)) # the btm cabin
-        agent2 = self.grid.get_cell_list_contents((pos[0], 5)) # the top cabin
+        #if his current position is in the upper half give the cabin that is in the upper half
+        if(pos[1]>=10):
+            top_column = 11
+            btm_column = 9
+        else:
+            top_column = 5
+            btm_column = 3
+        agent1 = self.grid.get_cell_list_contents((pos[0],top_column)) # the btm cabin
+        agent2 = self.grid.get_cell_list_contents((pos[0], btm_column)) # the top cabin
         for agent in agent1:
             if ( isinstance(agent,CabinAgent) and agent.capacity >0):
                 return agent
@@ -309,25 +328,32 @@ class PlaneModel(Model):
                 return agent
         # if after these 2 loops and it still cannot find, then we need to use the entire search space
         cabin = self.get_next_avail_cabin(pos)
-        if(isinstance(cabin,CabinAgent) and cabin.capacity >0):
+        if(isinstance(cabin,CabinAgent) ):
             return cabin
         return None
 
 
+
     def get_next_avail_cabin(self,pos): # this will require the current position
         #  this function is called when the cabin allocated to the passenger column is occupied and
+        if(pos[1]>=10):
+            top_column = 11
+            btm_column = 9
+        else:
+            top_column = 5
+            btm_column = 3
         if (pos[0] >= 20):  # the search space to the right is lesser
-            for i in range(pos[0] + 1, 36):
-                top_cabin = self.get_cabin((i, 3))
-                btm_cabin = self.get_cabin((i, 5))
+            for i in range(pos[0] + 1, 51):
+                top_cabin = self.get_cabin((i, top_column))
+                btm_cabin = self.get_cabin((i, btm_column))
                 if (top_cabin.capacity > 0):
                     return top_cabin
                 elif (btm_cabin.capacity > 0):
                     return btm_cabin
             # even after this it doesnt return means all the cabins to the right are occupied sp have to search the left side
             for i in range(2, pos[0]):
-                top_cabin = self.get_cabin((i, 3))
-                btm_cabin = self.get_cabin((i, 5))
+                top_cabin = self.get_cabin((i, top_column))
+                btm_cabin = self.get_cabin((i, btm_column))
                 if (top_cabin.capacity > 0):
                     return top_cabin
                 elif (btm_cabin.capacity > 0):
@@ -335,17 +361,16 @@ class PlaneModel(Model):
 
         else:  # the search space to the left is smaller
             for i in range(2, pos[0]):
-                top_cabin = self.get_cabin((i, 3))
-                btm_cabin = self.get_cabin((i, 5))
+                top_cabin = self.get_cabin((i, top_column))
+                btm_cabin = self.get_cabin((i, btm_column))
                 if (top_cabin.capacity > 0):
                     return top_cabin
                 elif (btm_cabin.capacity > 0):
                     return btm_cabin
-            for i in range(pos[0] + 1, 36):
-                top_cabin = self.get_cabin((i, 3))
-                btm_cabin = self.get_cabin((i, 5))
+            for i in range(pos[0] + 1, 51):
+                top_cabin = self.get_cabin((i, top_column))
+                btm_cabin = self.get_cabin((i, btm_column))
                 if (top_cabin.capacity > 0):
                     return top_cabin
                 elif (btm_cabin.capacity > 0):
                     return btm_cabin
-

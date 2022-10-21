@@ -2,7 +2,7 @@ import plane
 
 # create 2 global variable which is the first row and the last row, the rows with the emergency exit
 first_row = 3
-last_row = 35
+last_row = 51
 # row 12 and row 14 are evac seats
 evac_seats = [14,16]
 def random(model):
@@ -71,7 +71,7 @@ def front_to_back(model):
     id = 1
     for x in range(last_row-1,first_row-1,-1):
         sub_group = []
-        for y in ( 0, 1, 2, 6, 7,8):
+        for y in (  0, 1, 2, 6, 7,8,12,13,14):
             if (x not in evac_seats):
                 agent = plane.PassengerAgent(id, model, (x, y), group_id)
                 id += 1
