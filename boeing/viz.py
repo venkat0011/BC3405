@@ -42,7 +42,7 @@ def agent_portrayal(agent):
         # create a new instance for cabin agent, create a new class in plane then need to modify the algo abit
         portrayal['text'] = agent.pos
         portrayal['text_color'] = 'black'
-        
+
         if agent.type == 'CORRIDOR':
             portrayal['Color'] = 'lightgreen'
         elif agent.type == 'SEAT':

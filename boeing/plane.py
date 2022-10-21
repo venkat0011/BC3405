@@ -1,7 +1,7 @@
 from mesa import Model, Agent
 from mesa.space import MultiGrid
 import queue_method
-import methods 
+import methods
 import numpy as np
 
 
@@ -226,9 +226,10 @@ class PlaneModel(Model):
         scoot_plus_cols = [3, 4, 5, 6, 7]
 
         cabin_rows = [3, 5, 9, 11]
+        corridor_rows = [4, 10]
         rows = list(range(15))
 
-        for row in (list(set(rows)-set(cabin_rows))):
+        for row in (0,1,2,6,7,8,12,13,14):
             # for col in (0, 1, 2):
             #     patch = PatchAgent(id, self, 'WALL')
             #     self.grid.place_agent(patch, (col, row))
