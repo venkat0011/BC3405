@@ -83,7 +83,10 @@ class PassengerAgent(Agent):
                     cabin.capacity-=1
                 else: # first we need to move to the cabin first then deposit
                     print("it is going to move")
-                    self.move(cabin.col-self.pos[0],0)
+                    if(cabin.col > self.pos[0]):
+                        self.move(1,0)
+                    else:
+                        self.move(-1,0)
 
                     pass
 
@@ -95,8 +98,12 @@ class PassengerAgent(Agent):
                 # need to move back to the seat position
                 # need to check where is the seating postion and the current position
                 if(self.seat_pos[0]!=self.pos[0]):
-                    self.move(self.seat_pos[0] - self.pos[0],0)
-                self.state = 'SEATING'
+                    if(self.seat_pos[0]>self.pos[0]):
+                        self.move(1,0)
+                    else:
+                        self.move(-1,0)
+                else:
+                    self.state = 'SEATING'
 
         elif self.state == 'SEATING':
             if self.seat_pos[1] in (1, 2, 3):
