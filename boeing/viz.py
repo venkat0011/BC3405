@@ -4,9 +4,7 @@ import mesa.visualization.modules
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.ModularVisualization import VisualizationElement
-
 no_of_rows = 54
-
 colors = [
     'blue', 'cyan', 'orange', 'yellow', 'magenta', 'purple', '#103d3e', '#9fc86c',
     '#b4c2ed', '#31767d', '#31a5fa', '#ba96e0', '#fef3e4', '#6237ac', '#f9cacd', '#1e8123'
@@ -40,8 +38,9 @@ def agent_portrayal(agent):
                      "h": 1}
 
         # create a new instance for cabin agent, create a new class in plane then need to modify the algo abit
-        portrayal['text'] = agent.pos
-        portrayal['text_color'] = 'black'
+
+        # portrayal['text'] = agent.pos
+        # portrayal['text_color'] = 'black'
 
         if agent.type == 'CORRIDOR':
             portrayal['Color'] = 'lightgreen'
