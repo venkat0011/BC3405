@@ -230,7 +230,7 @@ class PlaneModel(Model):
     }
 
     def __init__(self, method, shuffle_enable=True, common_bags='normal'):
-        self.grid = MultiGrid(38, 15, False)
+        self.grid = MultiGrid(54, 15, False)
         self.running = True
         self.schedule = queue_method.QueueActivation(self)
         self.method = self.method_types[method]
