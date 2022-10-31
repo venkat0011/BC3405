@@ -66,7 +66,7 @@ class PassengerAgent(Agent):
                     sub = 2
                 else:
                     sub = 1
-                print(self.pos[1])
+                # print(self.pos[1])
                 if self.pos[1] > 4 and self.pos[1] != 10 and self.model.get_patch((self.pos[0], self.pos[1] - sub)).state == 'FREE':
                     self.move(0, -sub)
                 elif self.pos[1] < 4 and self.model.get_patch((self.pos[0], self.pos[1] + sub)).state == 'FREE':
@@ -93,7 +93,7 @@ class PassengerAgent(Agent):
                     self.baggage -= 1
                     cabin.capacity -= 1
                 else:  # first we need to move to the cabin first then deposit
-                    print("it is going to move")
+                    # print("it is going to move")
                     if (cabin.col > self.pos[0]):
                         # check if the right patch is free
                         self.move(1, 0)
@@ -157,8 +157,8 @@ class PassengerAgent(Agent):
                         local_agent = self.model.get_passenger(
                             (self.seat_pos[0], y))
                         if local_agent is not None:
-                            print("THE BLOCKING AGENT IN THE TOP IS",
-                                  local_agent.unique_id)
+                            # print("THE BLOCKING AGENT IN THE TOP IS",
+                            #       local_agent.unique_id)
                             if local_agent.state != 'FINISHED':
                                 raise Exception()
                             shuffle_agents1.append(local_agent)
