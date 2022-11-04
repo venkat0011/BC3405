@@ -24,8 +24,8 @@ plot_design = []
 
 for i in method_types:
     fixed_params = {"method": i}
-    batch_run = BatchRunner(PlaneModel, None, fixed_params, iterations=1,
-                            model_reporters={"method_time": lambda m: m.schedule.time}, display_progress=False,max_steps=1500)
+    batch_run = BatchRunner(PlaneModel, None, fixed_params, iterations=3,
+                            model_reporters={"method_time": lambda m: m.schedule.time}, display_progress=True,max_steps=1500)
     batch_run.run_all()
     all_times = (batch_run.get_model_vars_dataframe()['method_time'])
     c_times = collections.Counter(all_times)
@@ -58,12 +58,12 @@ plt.show()
 plt.clf()
 plt.close()
 
-# new_params1 = [{"method": method_types[0], "shuffle_enable": True, 'common_bags': 0},
-#                {"method": method_types[0], "shuffle_enable": True, 'common_bags': 1},
-#                {"method": method_types[0], "shuffle_enable": True, 'common_bags': 2},
+new_params1 = [{"method": method_types[0], "shuffle_enable": True, 'common_bags': 2},
+            #    {"method": method_types[0], "shuffle_enable": False, 'common_bags': 1},
+            #    {"method": method_types[0], "shuffle_enable": False, 'common_bags': 2},
             #    {"method": method_types[0], "shuffle_enable": False, 'common_bags': 3},
             #    {"method": method_types[0], "shuffle_enable": False, 'common_bags': 4}
-            #    ]
+               ]
 
 # new_params2 = [{"method": method_types[3], "shuffle_enable": True, 'common_bags': 0},
 #                {"method": method_types[3], "shuffle_enable": False, 'common_bags': 1},
@@ -71,31 +71,31 @@ plt.close()
 #                {"method": method_types[3], "shuffle_enable": False, 'common_bags': 3},
 #                {"method": method_types[3], "shuffle_enable": False, 'common_bags': 4}]
 
-# bins = np.linspace(100, 500, 100)
+bins = np.linspace(100, 500, 100)
 
-# fig, axes = plt.subplots(1, 5,figsize=(15,3), dpi=100, sharey=True)
+fig, axes = plt.subplots(1, 5,figsize=(15,3), dpi=100, sharey=True)
 
-# ### RANDOM
-# for j in range(len(new_params1)):
-#     batch_run = BatchRunner(PlaneModel, None, new_params1[j], iterations=50,
-#                             model_reporters={"method_time": lambda m: m.schedule.time}, display_progress=False,
-#                             max_steps=1500)
-#     batch_run.run_all()
-#     all_times = (batch_run.get_model_vars_dataframe()['method_time'])
-#     c_times = collections.Counter(all_times)
-#     common = sorted(c_times.elements())
-#     a = np.asarray(common)
-#     average_time = mean(batch_run.get_model_vars_dataframe()['method_time'])
-#     if j == 0:
-#         label_name = "SHUFFLE ONLY" + " " + "avg. time:" + " " + str(average_time)
-#     else:
-#         label_name = "BAG SIZE:" +" "+ str(j) + " " + "avg. time:" + " "+str(average_time)
-#     sns.distplot(a, color=colors[j], ax=axes[j], label="Density", axlabel=label_name, hist=False)
+### RANDOM
+for j in range(len(new_params1)):
+    batch_run = BatchRunner(PlaneModel, None, new_params1[j], iterations=10,
+                            model_reporters={"method_time": lambda m: m.schedule.time}, display_progress=True,
+                            max_steps=1500)
+    batch_run.run_all()
+    all_times = (batch_run.get_model_vars_dataframe()['method_time'])
+    c_times = collections.Counter(all_times)
+    common = sorted(c_times.elements())
+    a = np.asarray(common)
+    average_time = mean(batch_run.get_model_vars_dataframe()['method_time'])
+    if j == 0:
+        label_name = "SHUFFLE ONLY" + " " + "avg. time:" + " " + str(average_time)
+    else:
+        label_name = "BAG SIZE:" +" "+ str(j) + " " + "avg. time:" + " "+str(average_time)
+    sns.distplot(a, color=colors[j], ax=axes[j], label="Density", axlabel=label_name, hist=False)
 
 
-# plt.show()
-# plt.clf()
-# plt.close()
+plt.show()
+plt.clf()
+plt.close()
 
 # fig, axes = plt.subplots(1, 5,figsize=(15,3), dpi=100, sharey=True)
 # ### BACK TO FRONT (4 GROUPS)

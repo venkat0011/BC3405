@@ -7,9 +7,9 @@ import numpy as np
 
 def baggage_normal():
     """ Generates a positive integer number from normal distribution """
-    value = round(np.random.normal(1, 1), 0)
+    value = round(np.random.normal(1, 0.33), 0)
     while value < 0:
-        value = round(np.random.normal(1, 1), 0)
+        value = round(np.random.normal(1,0.33), 0)
     return value
 
 
@@ -71,22 +71,26 @@ class PassengerAgent(Agent):
                 if self.model.get_patch((self.pos[0], self.pos[1])).back == 0:
                     self.model.get_patch((self.pos[0], self.pos[1])).ongoing_shuffle = False
 
-        elif self.state == 'BAGGAGE': # we need to update the capacity of the bin in the relevant col
+        elif self.state == 'BAGGAGE':  # we need to update the capacity of the bin in the relevant col
             if self.baggage >= 1:
                 # get the cabin allocated to this person first
                 # we need to get the cabin based on his current position, the first instance of baggage is when he is at the column of his seat
-                cabin = self.model.get_cabin(self.pos) # this will always return the avaialbale bin
-                #the bin might not always be in the current location, so we need to check if it is in the same column
-                if(cabin.col == self.pos[0]):
+                # this will always return the avaialbale bin
+                cabin = self.model.get_cabin(self.pos)
+                # the bin might not always be in the current location, so we need to check if it is in the same column
+                if (cabin.col == self.pos[0]):
 
-                    self.baggage-=1
-                    cabin.capacity-=1
-                else: # first we need to move to the cabin first then deposit
-                    print("it is going to move")
-                    self.move(cabin.col-self.pos[0],0)
+                    self.baggage -= 1
+                    cabin.capacity -= 1
+                else:  # first we need to move to the cabin first then deposit
+                    # print("it is going to move")
+                    if (cabin.col > self.pos[0]):
+                        # check if the right patch is free
+                        self.move(1, 0)
+                    else:
+                        self.move(-1, 0)
 
                     pass
-
 
                 # check what is the position, which row does it belong to, 1,2,3 will belong to the cabin at the top
                 # while 5,6,7 will belong to the btm cabin
@@ -94,9 +98,13 @@ class PassengerAgent(Agent):
             else:
                 # need to move back to the seat position
                 # need to check where is the seating postion and the current position
-                if(self.seat_pos[0]!=self.pos[0]):
-                    self.move(self.seat_pos[0] - self.pos[0],0)
-                self.state = 'SEATING'
+                if (self.seat_pos[0] != self.pos[0]):
+                    if (self.seat_pos[0] > self.pos[0]):
+                        self.move(1, 0)
+                    else:
+                        self.move(-1, 0)
+                else:
+                    self.state = 'SEATING'
 
         elif self.state == 'SEATING':
             if self.seat_pos[1] in (1, 2, 3):
@@ -166,7 +174,7 @@ class PatchAgent(Agent):
 class CabinAgent(Agent):
     def __init__(self,unique_id,model,patch_type,col):
         super().__init__(unique_id, model) # path type wl
-        self.capacity = 4
+        self.capacity = 5
         self.col = col
         self.type = patch_type
         self.shuffle = 0
